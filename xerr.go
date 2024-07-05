@@ -1,20 +1,20 @@
 package xerr
 
 type xErr struct {
-	msg    string
-	caller caller
-	data   data
+	Msg    string `json:"msg,omitempty"`
+	Caller caller `json:"caller,omitempty"`
+	Data   data   `json:"data,omitempty"`
 }
 
-// New returns a xErr struct, that implements error interface.
+// New returns an xErr struct, that implements error interface.
 func New(msg string) error {
 	return xErr{
-		msg:    msg,
-		caller: call(),
-		data:   make(data),
+		Msg:    msg,
+		Caller: call(),
+		Data:   make(data),
 	}
 }
 
 func (e xErr) Error() string {
-	return e.msg
+	return e.Msg
 }
