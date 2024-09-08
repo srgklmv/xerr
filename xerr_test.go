@@ -1,7 +1,6 @@
 package xerr
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"reflect"
@@ -20,7 +19,7 @@ func TestXErr_New(t *testing.T) {
 		t.Error("New() should return a non-nil result")
 	}
 
-	var err xErr
+	var err *xErr
 	if !errors.As(e, &err) {
 		t.Error("New() should return an xErr type")
 	}
@@ -28,54 +27,17 @@ func TestXErr_New(t *testing.T) {
 
 func TestXErr_Error(t *testing.T) {
 	msg := "some error message 1 2 3"
+	outerMsg := "amogus"
 
 	err := New(msg)
 
 	if err.Error() != msg {
 		t.Error("Error() should return passed message")
 	}
-}
 
-// json.go section
-
-func TestXErr_JSON(t *testing.T) {
-	msg := "some error message"
-	err := New(msg)
-
-	d := Data{
-		"key1": "value1",
-		"key2": "value2",
-	}
-
-	ok := AddData(err, d)
-	if !ok {
-		t.Error("AddData() should return true when adding data")
-	}
-
-	_, f, _, _ := runtime.Caller(0)
-	l := 42
-
-	expected := xErr{
-		Msg:    msg,
-		Caller: caller(fmt.Sprintf("%s:%d", f, l)),
-	}
-
-	AddData(expected, d)
-
-	var j1, j2 interface{}
-
-	e := json.Unmarshal(JSON(err), &j1)
-	if e != nil {
-		t.Error("Unmarshall error")
-	}
-
-	e = json.Unmarshal(JSON(expected), &j2)
-	if e != nil {
-		t.Error("Unmarshall error")
-	}
-
-	if !reflect.DeepEqual(err, expected) {
-		t.Error("JSONs not equal")
+	err = FromError(err, outerMsg)
+	if err.Error() != fmt.Sprintf("%s: %s", outerMsg, msg) {
+		t.Error("Error() should return passed message and inner error msg")
 	}
 }
 
@@ -84,11 +46,11 @@ func TestXErr_JSON(t *testing.T) {
 func TestCaller_call(t *testing.T) {
 	err := New("error message")
 
-	_, f, _, _ := runtime.Caller(0)
-	l := 11
+	_, f, l, _ := runtime.Caller(0)
+	l = l - 2
 	c := fmt.Sprintf("%s:%d", f, l)
 
-	var e xErr
+	var e *xErr
 	if !errors.As(err, &e) {
 		t.Error("Wrong error type")
 	}
@@ -101,59 +63,51 @@ func TestCaller_call(t *testing.T) {
 // data.go section
 
 func TestData_AddData(t *testing.T) {
+	var (
+		d1 = Data{
+			"field1": "value1",
+			"field2": "value2",
+		}
+		d2 = Data{
+			"field3": "value3",
+		}
+		d12 = Data{
+			"field1": "value1",
+			"field2": "value2",
+			"field3": "value3",
+		}
+	)
+
 	err := New("some message")
 
-	d := Data{
-		"field1": "value1",
-		"field2": "value2",
-	}
-
-	ok := AddData(err, d)
+	ok := AddData(err, d1)
 	if !ok {
 		t.Error("AddData() failed")
 	}
 
-	var e xErr
+	var e *xErr
 	if !errors.As(err, &e) {
 		t.Error("Wrong error type")
 	}
 
-	if len(e.Data) != 2 {
-		t.Error("Wrong data length")
+	equal := reflect.DeepEqual(e.Data, d1)
+	if !equal {
+		t.Error("Wrong data #1.")
 	}
 
-	v1, ok1 := e.Data["field1"]
-	v2, ok2 := e.Data["field2"]
-
-	if !ok1 || !ok2 {
-		t.Error("Data not added")
+	ok = AddData(err, d2)
+	if !ok {
+		t.Error("AddData() - 2 failed")
 	}
 
-	if v1 != d["field1"] || v2 != d["field2"] {
-		t.Error("Wrong data")
-	}
-
-	d2 := Data{
-		"field3": "value3",
-	}
-
-	var e2 xErr
+	var e2 *xErr
 	if !errors.As(err, &e2) {
 		t.Error("Wrong error type")
 	}
 
-	if len(e2.Data) != 3 {
-		t.Error("Wrong data length")
-	}
-
-	v3, ok3 := e.Data["field3"]
-
-	if !ok3 {
-		t.Error("Data not added")
-	}
-
-	if v3 != d2["field3"] {
-		t.Error("Wrong data")
+	equal = reflect.DeepEqual(e.Data, d12)
+	if !equal {
+		t.Error("Wrong data #2.")
 	}
 }
 
