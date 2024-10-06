@@ -8,7 +8,7 @@ import (
 	"testing"
 )
 
-//xerr.go section
+// xerr.go section
 
 func TestXErr_New(t *testing.T) {
 	var e error
@@ -16,12 +16,12 @@ func TestXErr_New(t *testing.T) {
 	e = New("some error message")
 
 	if e == nil {
-		t.Error("New() should return a non-nil result")
+		t.Error("New() should return a non-nil result.")
 	}
 
 	var err *xErr
 	if !errors.As(e, &err) {
-		t.Error("New() should return an xErr type")
+		t.Error("New() should return an xErr type.")
 	}
 }
 
@@ -31,13 +31,17 @@ func TestXErr_Error(t *testing.T) {
 
 	err := New(msg)
 
-	if err.Error() != msg {
-		t.Error("Error() should return passed message")
+	if err == nil {
+		t.Error("Error is nil.")
 	}
 
-	err = FromError(err, outerMsg)
+	if err.Error() != msg {
+		t.Error("Error() should return passed message.")
+	}
+
+	err = WrapError(err, outerMsg)
 	if err.Error() != fmt.Sprintf("%s: %s", outerMsg, msg) {
-		t.Error("Error() should return passed message and inner error msg")
+		t.Error("Error() should return passed message and inner error msg.")
 	}
 }
 
@@ -52,11 +56,11 @@ func TestCaller_call(t *testing.T) {
 
 	var e *xErr
 	if !errors.As(err, &e) {
-		t.Error("Wrong error type")
+		t.Error("Wrong error type.")
 	}
 
 	if string(e.Caller) != c {
-		t.Error("Wrong caller")
+		t.Error("Wrong caller.")
 	}
 }
 
@@ -82,12 +86,12 @@ func TestData_AddData(t *testing.T) {
 
 	ok := AddData(err, d1)
 	if !ok {
-		t.Error("AddData() failed")
+		t.Error("AddData() failed.")
 	}
 
 	var e *xErr
 	if !errors.As(err, &e) {
-		t.Error("Wrong error type")
+		t.Error("Wrong error type.")
 	}
 
 	equal := reflect.DeepEqual(e.Data, d1)
@@ -97,12 +101,12 @@ func TestData_AddData(t *testing.T) {
 
 	ok = AddData(err, d2)
 	if !ok {
-		t.Error("AddData() - 2 failed")
+		t.Error("AddData() - 2 failed.")
 	}
 
 	var e2 *xErr
 	if !errors.As(err, &e2) {
-		t.Error("Wrong error type")
+		t.Error("Wrong error type.")
 	}
 
 	equal = reflect.DeepEqual(e.Data, d12)
@@ -124,7 +128,7 @@ func TestData_GetData(t *testing.T) {
 	ed := GetData(err)
 
 	if !reflect.DeepEqual(ed, d) {
-		t.Error("Wrong data")
+		t.Error("Wrong data.")
 	}
 
 	d["field3"] = "value3"
@@ -136,6 +140,6 @@ func TestData_GetData(t *testing.T) {
 	ed = GetData(err)
 
 	if !reflect.DeepEqual(ed, d) {
-		t.Error("Wrong data - 2")
+		t.Error("Wrong data - 2.")
 	}
 }

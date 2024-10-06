@@ -17,13 +17,16 @@ func New(msg string) error {
 	}
 }
 
-func FromError(err error, msg string) error {
-
-	return &xErr{
+// WrapError returns an xErr struct from err with new message.
+func WrapError(err error, msg string) error {
+	e := &xErr{
 		err:    err,
-		Msg:    msg,
 		Caller: call(),
 	}
+
+	e.Msg = msg
+
+	return e
 }
 
 func (e *xErr) Error() string {

@@ -2,7 +2,6 @@ package xerr
 
 import (
 	"errors"
-	"fmt"
 )
 
 type Data map[string]interface{}
@@ -14,7 +13,6 @@ type Data map[string]interface{}
 func AddData(err error, d Data) (ok bool) {
 	var e *xErr
 	if !errors.As(err, &e) {
-		fmt.Print("\nI AM HERE! not xErr\n")
 		return false
 	}
 
@@ -29,7 +27,7 @@ func AddData(err error, d Data) (ok bool) {
 	return true
 }
 
-// GetData returns Data from xErr type. Returns err.Error() result if error is
+// GetData returns Data from xErr type. Returns nil if error is
 // not an xErr type.
 func GetData(err error) Data {
 	var e *xErr
