@@ -10,6 +10,19 @@ import (
 
 // xerr.go section
 
+func TestXErr(t *testing.T) {
+	type i interface {
+		Error() string
+		Unwrap() error
+		Is(error) bool
+
+		New(string) error
+		Wrap(error, string) error
+
+		AddData(Data)
+	}
+}
+
 func TestXErr_New(t *testing.T) {
 	var e error
 
